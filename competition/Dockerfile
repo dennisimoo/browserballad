@@ -23,4 +23,4 @@ COPY . .
 EXPOSE 8000
 
 # Run the application
-CMD ["uv", "run", "python", "-m", "competition.server"]
+CMD ["uv", "run", "python", "server.py"]
