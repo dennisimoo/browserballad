@@ -118,7 +118,7 @@ function formatDuration(value: number | null): string {
 
 export default function HomePage(): ReactElement {
   const [race, setRace] = useState<RaceData | null>(null);
-  const [agentRunId, setAgentRunId] = useState<string | null>(null);
+  const [bobRunId, setBobRunId] = useState<string | null>(null);
   const [raceError, setRaceError] = useState<string | null>(null);
   const [humanSubmission, setHumanSubmission] = useState("");
   const [isCreatingRace, setIsCreatingRace] = useState(false);
@@ -315,7 +315,7 @@ export default function HomePage(): ReactElement {
       }
       const payload: RaceResponse = await response.json();
       setRace(payload.race);
-      setAgentRunId(null);
+      setBobRunId(null);
       setHumanSubmission("");
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -353,7 +353,7 @@ export default function HomePage(): ReactElement {
       }
       const agentPayload: AgentStartResponse = await agentResponse.json();
       setRace(agentPayload.race);
-      setAgentRunId(agentPayload.run_id);
+      setBobRunId(agentPayload.run_id);
       startStream(agentPayload.run_id, agentPayload.race.race_id);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -490,8 +490,8 @@ export default function HomePage(): ReactElement {
     };
   }, []);
 
-  const agentLiveUrl = race?.agent.live_url ?? null;
-  const agentStatus = race?.agent.status ?? "pending";
+  const bobLiveUrl = race?.agent.live_url ?? null;
+  const bobStatus = race?.agent.status ?? "pending";
   const humanStatus = race?.human.status ?? "pending";
   const verdict = race?.verdict ?? null;
   const taskType = race?.task.task_type ?? "text_entry";
@@ -500,19 +500,22 @@ export default function HomePage(): ReactElement {
   const disableHumanForm = !promptVisible || humanStatus === "completed" || humanStatus === "error";
   const raceStatus = race?.status ?? "awaiting_task";
 
-  const runIdDisplay = useMemo(() => agentRunId ?? "—", [agentRunId]);
-  const agentResultText = race?.agent.result ?? "";
+  const runIdDisplay = useMemo(() => bobRunId ?? "—", [bobRunId]);
+  const bobResultText = race?.agent.result ?? "";
   const humanResultText = race?.human.result ?? "";
   const humanResultPreview = humanResultText
     ? `${humanResultText.slice(0, 40)}${humanResultText.length > 40 ? "…" : ""}`
     : "—";
 
   return (
-    <main className="min-h-screen bg-stone-950 text-stone-100">
+    <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto w-full max-w-5xl space-y-10 px-4 py-10">
         <header className="space-y-3 text-center">
-          <h1 className="text-3xl font-semibold tracking-tight text-stone-50">Ballad of Browsers</h1>
-          <p className="text-stone-400">
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">Bob</h1>
+            <p className="text-xs text-muted-foreground">
+            Battle of the Browsers.
+            </p>
+          <p className="text-muted-foreground">
             Spin up a fresh browser quest, and race the autonomous agent.
           </p>
           {/* <p className="text-sm text-stone-500">
@@ -520,17 +523,17 @@ export default function HomePage(): ReactElement {
             {isRefreshingRace ? " • syncing" : ""}
           </p> */}
           {raceError && (
-            <p className="mx-auto max-w-xl rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-2 text-sm text-red-200">
+            <p className="mx-auto max-w-xl rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-2 text-sm text-destructive">
               {raceError}
             </p>
           )}
         </header>
 
-        <section className="rounded-2xl border border-stone-800 bg-stone-900/60 p-6 shadow-lg shadow-stone-950/40">
+        <section className="rounded-2xl border border-border/60 bg-card/80 p-6 shadow-lg">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.28em] text-stone-500">Current Task</p>
-              <h2 className="text-2xl font-semibold text-stone-50">
+              <p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Current Task</p>
+              <h2 className="text-2xl font-semibold text-foreground">
                 {promptVisible
                   ? race?.task.title ?? "Race task"
                   : race
@@ -542,7 +545,7 @@ export default function HomePage(): ReactElement {
               <Button
                 onClick={createRace}
                 disabled={isCreatingRace || isStartingRace}
-                className="bg-stone-800 text-stone-100 hover:bg-stone-700"
+                className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
                 {isCreatingRace ? "Generating" : "Generate Task"}
@@ -551,7 +554,7 @@ export default function HomePage(): ReactElement {
                 <Button
                   onClick={handleStartRace}
                   disabled={isStartingRace}
-                  className="bg-stone-100 text-stone-900 hover:bg-stone-200"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   <PlayCircle className="mr-2 h-4 w-4" />
                   {isStartingRace ? "Starting" : "Start Race"}
@@ -561,86 +564,86 @@ export default function HomePage(): ReactElement {
           </div>
 
           {!race ? (
-            <p className="mt-6 text-sm text-stone-400">
-              Tap <span className="font-medium text-stone-200">Generate Task</span> to create a new race, then
+            <p className="mt-6 text-sm text-muted-foreground">
+              Tap <span className="font-medium text-foreground">Generate Task</span> to create a new race, then
               press start when you are ready.
             </p>
           ) : !promptVisible ? (
-            <div className="mt-6 rounded-xl border border-stone-800 bg-stone-950/40 p-4 text-sm text-stone-300">
+            <div className="mt-6 rounded-xl border border-border/60 bg-muted/40 p-4 text-sm text-muted-foreground">
               Task prepared. Launch the race to reveal the instructions and kick off both participants.
             </div>
           ) : (
-            <div className="mt-6 rounded-xl border border-stone-800 bg-stone-950/40 p-4 text-sm text-stone-300">
+            <div className="mt-6 rounded-xl border border-border/60 bg-muted/40 p-4 text-sm text-muted-foreground">
               Prompt unlocked. Scroll down to the human submission panel to view the instructions.
             </div>
           )}
         </section>
 
-        <section className="rounded-2xl border border-stone-800 bg-stone-900/60 p-6 shadow-lg shadow-stone-950/40">
-          <h2 className="text-lg font-medium text-stone-100">Status Board</h2>
+        <section className="rounded-2xl border border-border/60 bg-card/80 p-6 shadow-lg">
+          <h2 className="text-lg font-medium text-foreground">Status Board</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <div className="rounded-xl border border-stone-800 bg-stone-950/40 p-4 shadow-inner shadow-stone-950/40">
+            <div className="rounded-xl border border-border/60 bg-muted/40 p-4 shadow-inner">
               <div className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2 text-stone-400">
+                <span className="flex items-center gap-2 text-muted-foreground">
                   <MonitorPlay className="h-4 w-4" /> Agent
                 </span>
-                <span className="text-stone-200">{agentStatus}</span>
+                <span className="text-foreground">{agentStatus}</span>
               </div>
-              <dl className="mt-3 space-y-2 text-sm text-stone-300">
+              <dl className="mt-3 space-y-2 text-sm text-muted-foreground">
                 <div className="flex justify-between">
-                  <dt className="text-stone-500">Run ID</dt>
-                  <dd className="text-stone-200">{runIdDisplay}</dd>
+                  <dt className="text-muted-foreground">Run ID</dt>
+                  <dd className="text-foreground">{runIdDisplay}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-stone-500">Started</dt>
-                  <dd className="text-stone-200">{formatTimestamp(race?.agent.started_at ?? null)}</dd>
+                  <dt className="text-muted-foreground">Started</dt>
+                  <dd className="text-foreground">{formatTimestamp(race?.agent.started_at ?? null)}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-stone-500">Completed</dt>
-                  <dd className="text-stone-200">{formatTimestamp(race?.agent.completed_at ?? null)}</dd>
+                  <dt className="text-muted-foreground">Completed</dt>
+                  <dd className="text-foreground">{formatTimestamp(race?.agent.completed_at ?? null)}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-stone-500">Duration</dt>
-                  <dd className="text-stone-200">{formatDuration(race?.agent.duration_seconds ?? null)}</dd>
+                  <dt className="text-muted-foreground">Duration</dt>
+                  <dd className="text-foreground">{formatDuration(race?.agent.duration_seconds ?? null)}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-stone-500">Live Feed</dt>
-                  <dd className="text-stone-200">{agentLiveUrl ? "Ready" : "Pending"}</dd>
+                  <dt className="text-muted-foreground">Live Feed</dt>
+                  <dd className="text-foreground">{agentLiveUrl ? "Ready" : "Pending"}</dd>
                 </div>
               </dl>
               {agentResultText && (
                 <div className="mt-4">
-                  <Label className="text-xs uppercase tracking-[0.28em] text-stone-500">Agent Output</Label>
-                  <pre className="mt-2 max-h-48 overflow-auto rounded-xl border border-stone-800 bg-stone-950/60 p-3 text-xs text-stone-200">
+                  <Label className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Agent Output</Label>
+                  <pre className="mt-2 max-h-48 overflow-auto rounded-xl border border-border/60 bg-muted/50 p-3 text-xs text-foreground">
                     {agentResultText}
                   </pre>
                 </div>
               )}
             </div>
 
-            <div className="rounded-xl border border-stone-800 bg-stone-950/40 p-4 shadow-inner shadow-stone-950/40">
+            <div className="rounded-xl border border-border/60 bg-muted/40 p-4 shadow-inner">
               <div className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2 text-stone-400">
+                <span className="flex items-center gap-2 text-muted-foreground">
                   <Timer className="h-4 w-4" /> Human
                 </span>
-                <span className="text-stone-200">{humanStatus}</span>
+                <span className="text-foreground">{humanStatus}</span>
               </div>
-              <dl className="mt-3 space-y-2 text-sm text-stone-300">
+              <dl className="mt-3 space-y-2 text-sm text-muted-foreground">
                 <div className="flex justify-between">
-                  <dt className="text-stone-500">Started</dt>
-                  <dd className="text-stone-200">{formatTimestamp(race?.human.started_at ?? null)}</dd>
+                  <dt className="text-muted-foreground">Started</dt>
+                  <dd className="text-foreground">{formatTimestamp(race?.human.started_at ?? null)}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-stone-500">Completed</dt>
-                  <dd className="text-stone-200">{formatTimestamp(race?.human.completed_at ?? null)}</dd>
+                  <dt className="text-muted-foreground">Completed</dt>
+                  <dd className="text-foreground">{formatTimestamp(race?.human.completed_at ?? null)}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-stone-500">Duration</dt>
-                  <dd className="text-stone-200">{formatDuration(race?.human.duration_seconds ?? null)}</dd>
+                  <dt className="text-muted-foreground">Duration</dt>
+                  <dd className="text-foreground">{formatDuration(race?.human.duration_seconds ?? null)}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-stone-500">Submission</dt>
-                  <dd className="text-stone-200">{humanResultPreview}</dd>
+                  <dt className="text-muted-foreground">Submission</dt>
+                  <dd className="text-foreground">{humanResultPreview}</dd>
                 </div>
               </dl>
             </div>
@@ -648,22 +651,22 @@ export default function HomePage(): ReactElement {
         </section>
 
         {agentLiveUrl && (
-          <section className="rounded-2xl border border-stone-800 bg-stone-900/60 p-6 shadow-lg shadow-stone-950/40">
+          <section className="rounded-2xl border border-border/60 bg-card/80 p-6 shadow-lg">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <span className="flex items-center gap-2 text-sm text-stone-200">
-                <MonitorPlay className="h-4 w-4 text-stone-400" /> Live session ready
+              <span className="flex items-center gap-2 text-sm text-foreground">
+                <MonitorPlay className="h-4 w-4 text-muted-foreground" /> Live session ready
               </span>
               <div className="flex items-center gap-2">
                 <Button
                   type="button"
                   onClick={handleOpenLiveFullscreen}
-                  className="bg-stone-100 text-stone-900 hover:bg-stone-200"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   <Maximize2 className="mr-2 h-4 w-4" /> Fullscreen
                 </Button>
                 <Button
                   asChild
-                  className="bg-stone-800 text-stone-100 hover:bg-stone-700"
+                  className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
                 >
                   <a href={agentLiveUrl} target="_blank" rel="noreferrer">
                     Open in new tab
@@ -672,7 +675,7 @@ export default function HomePage(): ReactElement {
               </div>
             </div>
             <div
-              className={`mt-4 overflow-hidden rounded-2xl border border-stone-800 bg-stone-950 ${isLiveFullscreen ? "hidden" : ""}`}
+              className={`mt-4 overflow-hidden rounded-2xl border border-border/60 bg-card ${isLiveFullscreen ? "hidden" : ""}`}
             >
               <iframe
                 key={agentLiveUrl}
@@ -686,16 +689,16 @@ export default function HomePage(): ReactElement {
         )}
 
         <section
-          className="rounded-2xl border border-stone-800 bg-stone-900/60 p-6 shadow-lg shadow-stone-950/40"
+          className="rounded-2xl border border-border/60 bg-card/80 p-6 shadow-lg"
           ref={humanSectionRef}
         >
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-medium text-stone-100">Human Submission</h2>
-            <Timer className="h-4 w-4 text-stone-500" />
+            <h2 className="text-lg font-medium text-foreground">Human Submission</h2>
+            <Timer className="h-4 w-4 text-muted-foreground" />
           </div>
 
           {!promptVisible && (
-            <p className="mt-3 rounded-xl border border-stone-800 bg-stone-950/40 p-3 text-sm text-stone-400">
+            <p className="mt-3 rounded-xl border border-border/60 bg-muted/40 p-3 text-sm text-muted-foreground">
               Start the race to reveal the prompt and unlock submissions.
             </p>
           )}
@@ -703,8 +706,8 @@ export default function HomePage(): ReactElement {
           <div className="mt-4 space-y-4">
             {promptVisible && (
               <div className="space-y-2">
-                <p className="text-xs uppercase tracking-[0.28em] text-stone-500">Prompt</p>
-                <p className="rounded-xl border border-stone-800 bg-stone-950/40 p-4 text-base text-stone-100 whitespace-pre-wrap">
+                <p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Prompt</p>
+                <p className="rounded-xl border border-border/60 bg-card p-4 text-base text-foreground whitespace-pre-wrap">
                   {race?.task.human_instructions}
                 </p>
               </div>
@@ -713,7 +716,7 @@ export default function HomePage(): ReactElement {
               ? humanStatus !== "completed" && (
                   <form className="space-y-3" onSubmit={handleHumanSubmit}>
                     <div className="space-y-2">
-                      <Label htmlFor="human-submission" className="text-xs uppercase tracking-[0.28em] text-stone-500">
+                      <Label htmlFor="human-submission" className="text-xs uppercase tracking-[0.28em] text-muted-foreground">
                         Your Output
                       </Label>
                       <Textarea
@@ -723,13 +726,13 @@ export default function HomePage(): ReactElement {
                         placeholder="Describe what you found."
                         rows={5}
                         disabled={disableHumanForm || isSubmittingHuman}
-                        className="border-stone-800 bg-stone-950 text-stone-100 placeholder:text-stone-500 focus-visible:ring-stone-400/60 focus-visible:ring-offset-stone-950"
+                        className="border-border/60 bg-card text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/60 focus-visible:ring-offset-background"
                       />
                     </div>
                     <Button
                       type="submit"
                       disabled={disableHumanForm || isSubmittingHuman}
-                      className="bg-stone-100 text-stone-900 hover:bg-stone-200"
+                      className="bg-primary text-primary-foreground hover:bg-primary/90"
                     >
                       {isSubmittingHuman ? "Submitting" : "Submit Result"}
                     </Button>
@@ -741,7 +744,7 @@ export default function HomePage(): ReactElement {
                       void submitHuman(null);
                     }}
                     disabled={disableHumanForm || isSubmittingHuman}
-                    className="bg-stone-100 text-stone-900 hover:bg-stone-200"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     {isSubmittingHuman ? "Submitting" : "Mark Completed"}
                   </Button>
@@ -749,8 +752,8 @@ export default function HomePage(): ReactElement {
 
             {humanResultText && (
               <div>
-                <Label className="text-xs uppercase tracking-[0.28em] text-stone-500">Recorded Output</Label>
-                <pre className="mt-2 rounded-xl border border-stone-800 bg-stone-950/60 p-3 text-xs text-stone-200 whitespace-pre-wrap">
+                <Label className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Recorded Output</Label>
+                <pre className="mt-2 rounded-xl border border-border/60 bg-muted/50 p-3 text-xs text-foreground whitespace-pre-wrap">
                   {humanResultText}
                 </pre>
               </div>
@@ -759,31 +762,31 @@ export default function HomePage(): ReactElement {
         </section>
 
         {(isJudging || verdict) && (
-          <section className="rounded-2xl border border-stone-800 bg-stone-900/60 p-6 shadow-lg shadow-stone-950/40">
-            <div className="flex items-center gap-2 text-stone-200">
-              <Trophy className="h-5 w-5 text-amber-300" />
+          <section className="rounded-2xl border border-border/60 bg-card/80 p-6 shadow-lg">
+            <div className="flex items-center gap-2 text-foreground">
+              <Trophy className="h-5 w-5 text-primary" />
               <h2 className="text-lg font-medium">Final Verdict</h2>
             </div>
             {isJudging && !verdict ? (
-              <div className="mt-6 flex items-center justify-center gap-3 rounded-xl border border-stone-800 bg-stone-950/40 p-6 text-sm text-stone-300">
-                <Loader2 className="h-5 w-5 animate-spin text-stone-400" />
+              <div className="mt-6 flex items-center justify-center gap-3 rounded-xl border border-border/60 bg-muted/40 p-6 text-sm text-muted-foreground">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                 <span>Judging in progress…</span>
               </div>
             ) : (
               verdict && (
                 <div className="mt-4 space-y-3">
-                  <p className="text-sm text-stone-300">
-                    Winner: <span className="font-semibold uppercase text-stone-50">{verdict.winner}</span>
+                  <p className="text-sm text-muted-foreground">
+                    Winner: <span className="font-semibold uppercase text-foreground">{verdict.winner}</span>
                   </p>
-                  <p className="text-sm text-stone-300">{verdict.reasoning}</p>
+                  <p className="text-sm text-muted-foreground">{verdict.reasoning}</p>
                   <div className="grid gap-3 md:grid-cols-2">
-                    <div className="rounded-xl border border-stone-800 bg-stone-950/40 p-4 text-stone-200">
-                      <p className="text-xs uppercase tracking-[0.28em] text-stone-500">Agent Score</p>
-                      <p className="mt-2 text-3xl font-semibold text-stone-50">{verdict.agent_score.toFixed(1)}</p>
+                    <div className="rounded-xl border border-border/60 bg-muted/40 p-4 text-foreground">
+                      <p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Agent Score</p>
+                      <p className="mt-2 text-3xl font-semibold text-foreground">{verdict.agent_score.toFixed(1)}</p>
                     </div>
-                    <div className="rounded-xl border border-stone-800 bg-stone-950/40 p-4 text-stone-200">
-                      <p className="text-xs uppercase tracking-[0.28em] text-stone-500">Human Score</p>
-                      <p className="mt-2 text-3xl font-semibold text-stone-50">{verdict.human_score.toFixed(1)}</p>
+                    <div className="rounded-xl border border-border/60 bg-muted/40 p-4 text-foreground">
+                      <p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Human Score</p>
+                      <p className="mt-2 text-3xl font-semibold text-foreground">{verdict.human_score.toFixed(1)}</p>
                     </div>
                   </div>
                 </div>
@@ -793,15 +796,15 @@ export default function HomePage(): ReactElement {
         )}
 
         {isLiveFullscreen && agentLiveUrl && (
-          <div ref={liveFullscreenRef} className="fixed inset-0 z-50 flex flex-col bg-stone-950/95">
-            <div className="flex items-center justify-between border-b border-stone-800 bg-stone-950/90 px-4 py-3">
-              <span className="flex items-center gap-2 text-sm text-stone-200">
-                <MonitorPlay className="h-4 w-4 text-stone-400" /> Live session
+          <div ref={liveFullscreenRef} className="fixed inset-0 z-50 flex flex-col bg-background/95">
+            <div className="flex items-center justify-between border-b border-border/60 bg-card/90 px-4 py-3">
+              <span className="flex items-center gap-2 text-sm text-foreground">
+                <MonitorPlay className="h-4 w-4 text-muted-foreground" /> Live session
               </span>
               <div className="flex items-center gap-2">
                 <Button
                   asChild
-                  className="bg-stone-800 text-stone-100 hover:bg-stone-700"
+                  className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
                 >
                   <a href={agentLiveUrl} target="_blank" rel="noreferrer">
                     Open in another tab
@@ -810,13 +813,13 @@ export default function HomePage(): ReactElement {
                 <Button
                   type="button"
                   onClick={handleCloseLiveFullscreen}
-                  className="bg-stone-100 text-stone-900 hover:bg-stone-200"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   <X className="mr-2 h-4 w-4" /> Close
                 </Button>
               </div>
             </div>
-            <div className="flex-1 bg-stone-950">
+            <div className="flex-1 bg-background">
               <iframe
                 key={`${agentLiveUrl}-fullscreen`}
                 src={agentLiveUrl}
