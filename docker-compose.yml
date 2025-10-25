@@ -27,7 +27,7 @@ services:
     container_name: browserballad-frontend
     restart: unless-stopped
     ports:
-      - "4848:3000"
+      - "4848:4848"
     environment:
       - NEXT_PUBLIC_AGENT_API=${NEXT_PUBLIC_AGENT_API}
     depends_on:
