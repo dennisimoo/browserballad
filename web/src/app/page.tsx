@@ -511,7 +511,9 @@ export default function HomePage(): ReactElement {
       ? "Bob"
       : verdict.winner === "human"
         ? "You"
-        : verdict.winner
+        : verdict.winner === "tie"
+          ? "Tie"
+          : verdict.winner
     : null;
 
   return (
@@ -585,7 +587,7 @@ export default function HomePage(): ReactElement {
         </section>
 
         <section className="rounded-2xl border border-border/60 bg-card/80 p-6 shadow-lg">
-          <h2 className="text-lg font-medium text-foreground">Status Board</h2>
+          <h2 className="text-lg font-medium text-foreground">Mission Telemetry</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <div className="rounded-xl border border-border/60 bg-muted/40 p-4 shadow-inner">
               <div className="flex items-center justify-between text-sm">
