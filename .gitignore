@@ -1,0 +1,44 @@
+# Environment files
+.env
+.env.*
+web/.env
+web/.env.*
+
+# macOS
+.DS_Store
+
+# Node/Next.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+web/.next/
+web/.turbo/
+web/out/
+web/dist/
+web/.eslintcache
+web/.vercel/
+
+# Build artifacts
+dist/
+build/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.coverage
+.coverage.*
+
+# Tooling
+.idea/
+.vscode/
