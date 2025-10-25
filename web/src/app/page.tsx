@@ -130,6 +130,7 @@ export default function HomePage(): ReactElement {
   const liveFullscreenRef = useRef<HTMLDivElement | null>(null);
   const humanSectionRef = useRef<HTMLDivElement | null>(null);
   const hasScrolledToPromptRef = useRef(false);
+  const lastBobLiveUrlRef = useRef<string | null>(null);
 
   const eventSourceRef = useRef<EventSource | null>(null);
 
@@ -515,6 +516,24 @@ export default function HomePage(): ReactElement {
           ? "Tie"
           : verdict.winner
     : null;
+
+  useEffect(() => {
+    const newUrl = bobLiveUrl ?? null;
+    if (!newUrl) {
+      lastBobLiveUrlRef.current = null;
+      return;
+    }
+    if (lastBobLiveUrlRef.current === newUrl) {
+      return;
+    }
+    lastBobLiveUrlRef.current = newUrl;
+    const section = humanSectionRef.current;
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    }
+  }, [bobLiveUrl]);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
