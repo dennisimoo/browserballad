@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./competition
+      dockerfile: Dockerfile
+    container_name: browserballad-backend
+    restart: unless-stopped
+    environment:
+      - AGENT_SERVER_HOST=0.0.0.0
+      - AGENT_SERVER_PORT=8000
+      - AGENT_SERVER_RELOAD=false
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - BROWSER_USE_API_KEY=${BROWSER_USE_API_KEY}
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: browserballad-frontend
+    restart: unless-stopped
+    ports:
+      - "4848:3000"
+    environment:
+      - NEXT_PUBLIC_AGENT_API=${NEXT_PUBLIC_AGENT_API}
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
