@@ -60,7 +60,7 @@ type RaceData = {
 };
 
 type RaceResponse = { race: RaceData };
-type AgentStartResponse = RaceResponse & { run_id: string };
+type BobStartResponse = RaceResponse & { run_id: string };
 
 const LIVE_URL_REGEX = /https:\/\/live\.browser-use\.com[^\s\u001b]*/i;
 const STREAM_EVENT_TYPES = ["status", "log", "error", "result", "live_url", "complete", "message"] as const;
@@ -344,17 +344,17 @@ export default function HomePage(): ReactElement {
       setRace(humanPayload.race);
       setPromptVisible(true);
 
-      const agentResponse = await fetch(`${API_ORIGIN}/race/${raceId}/agent/start`, {
+      const bobResponse = await fetch(`${API_ORIGIN}/race/${raceId}/agent/start`, {
         method: "POST",
       });
-      if (!agentResponse.ok) {
-        const detail = await agentResponse.text();
-        throw new Error(`Failed to start agent (${agentResponse.status}): ${detail}`);
+      if (!bobResponse.ok) {
+        const detail = await bobResponse.text();
+        throw new Error(`Failed to start Bob (${bobResponse.status}): ${detail}`);
       }
-      const agentPayload: AgentStartResponse = await agentResponse.json();
-      setRace(agentPayload.race);
-      setBobRunId(agentPayload.run_id);
-      startStream(agentPayload.run_id, agentPayload.race.race_id);
+      const bobPayload: BobStartResponse = await bobResponse.json();
+      setRace(bobPayload.race);
+      setBobRunId(bobPayload.run_id);
+      startStream(bobPayload.run_id, bobPayload.race.race_id);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       setRaceError(message);
@@ -378,7 +378,7 @@ export default function HomePage(): ReactElement {
         });
         if (!response.ok) {
           const detail = await response.text();
-          throw new Error(`Failed to record human submission (${response.status}): ${detail}`);
+          throw new Error(`Failed to record your proof (${response.status}): ${detail}`);
         }
         const payload: RaceResponse = await response.json();
         setRace(payload.race);
@@ -506,19 +506,24 @@ export default function HomePage(): ReactElement {
   const humanResultPreview = humanResultText
     ? `${humanResultText.slice(0, 40)}${humanResultText.length > 40 ? "…" : ""}`
     : "—";
+  const winnerDisplay = verdict
+    ? verdict.winner === "agent"
+      ? "Bob"
+      : verdict.winner === "human"
+        ? "You"
+        : verdict.winner
+    : null;
 
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto w-full max-w-5xl space-y-10 px-4 py-10">
         <header className="space-y-3 text-center">
-          <h1 className="text-3xl font-semibold tracking-tight text-foreground">Bob</h1>
-            <p className="text-xs text-muted-foreground">
-            Battle of the Browsers.
-            </p>
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">Race Bob</h1>
+          <p className="text-xs text-muted-foreground uppercase tracking-[0.28em]">I am a robot.</p>
           <p className="text-muted-foreground">
-            Spin up a fresh browser quest, and race the autonomous agent.
+            Outpace Bob, the browser automation AI, to earn your "I am a robot" bragging rights.
           </p>
-          {/* <p className="text-sm text-stone-500">
+          {/* <p className="text-sm text-muted-foreground">
             Status: {raceStatus}
             {isRefreshingRace ? " • syncing" : ""}
           </p> */}
@@ -548,7 +553,7 @@ export default function HomePage(): ReactElement {
                 className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
-                {isCreatingRace ? "Generating" : "Generate Task"}
+                {isCreatingRace ? "Booting Bob" : "New Challenge"}
               </Button>
               {race && !promptVisible && (
                 <Button
@@ -557,7 +562,7 @@ export default function HomePage(): ReactElement {
                   className="bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   <PlayCircle className="mr-2 h-4 w-4" />
-                  {isStartingRace ? "Starting" : "Start Race"}
+                  {isStartingRace ? "Syncing" : "Prove I am a robot"}
                 </Button>
               )}
             </div>
@@ -565,16 +570,16 @@ export default function HomePage(): ReactElement {
 
           {!race ? (
             <p className="mt-6 text-sm text-muted-foreground">
-              Tap <span className="font-medium text-foreground">Generate Task</span> to create a new race, then
-              press start when you are ready.
+              Tap <span className="font-medium text-foreground">New Challenge</span> to summon Bob, then
+              launch the duel when your circuits are primed.
             </p>
           ) : !promptVisible ? (
             <div className="mt-6 rounded-xl border border-border/60 bg-muted/40 p-4 text-sm text-muted-foreground">
-              Task prepared. Launch the race to reveal the instructions and kick off both participants.
+              Bob is calibrating. Start the showdown to reveal the mission briefing for both racers.
             </div>
           ) : (
             <div className="mt-6 rounded-xl border border-border/60 bg-muted/40 p-4 text-sm text-muted-foreground">
-              Prompt unlocked. Scroll down to the human submission panel to view the instructions.
+              Mission unlocked. Scroll down to upload proof that you outpaced Bob.
             </div>
           )}
         </section>
@@ -585,13 +590,13 @@ export default function HomePage(): ReactElement {
             <div className="rounded-xl border border-border/60 bg-muted/40 p-4 shadow-inner">
               <div className="flex items-center justify-between text-sm">
                 <span className="flex items-center gap-2 text-muted-foreground">
-                  <MonitorPlay className="h-4 w-4" /> Agent
+                  <MonitorPlay className="h-4 w-4" /> Bob
                 </span>
-                <span className="text-foreground">{agentStatus}</span>
+                <span className="text-foreground">{bobStatus}</span>
               </div>
               <dl className="mt-3 space-y-2 text-sm text-muted-foreground">
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Run ID</dt>
+                  <dt className="text-muted-foreground">Bob Run ID</dt>
                   <dd className="text-foreground">{runIdDisplay}</dd>
                 </div>
                 <div className="flex justify-between">
@@ -607,15 +612,15 @@ export default function HomePage(): ReactElement {
                   <dd className="text-foreground">{formatDuration(race?.agent.duration_seconds ?? null)}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Live Feed</dt>
-                  <dd className="text-foreground">{agentLiveUrl ? "Ready" : "Pending"}</dd>
+                  <dt className="text-muted-foreground">Bob Feed</dt>
+                  <dd className="text-foreground">{bobLiveUrl ? "Ready" : "Pending"}</dd>
                 </div>
               </dl>
-              {agentResultText && (
+              {bobResultText && (
                 <div className="mt-4">
-                  <Label className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Agent Output</Label>
+                  <Label className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Bob&apos;s Output</Label>
                   <pre className="mt-2 max-h-48 overflow-auto rounded-xl border border-border/60 bg-muted/50 p-3 text-xs text-foreground">
-                    {agentResultText}
+                    {bobResultText}
                   </pre>
                 </div>
               )}
@@ -624,7 +629,7 @@ export default function HomePage(): ReactElement {
             <div className="rounded-xl border border-border/60 bg-muted/40 p-4 shadow-inner">
               <div className="flex items-center justify-between text-sm">
                 <span className="flex items-center gap-2 text-muted-foreground">
-                  <Timer className="h-4 w-4" /> Human
+                  <Timer className="h-4 w-4" /> You
                 </span>
                 <span className="text-foreground">{humanStatus}</span>
               </div>
@@ -642,7 +647,7 @@ export default function HomePage(): ReactElement {
                   <dd className="text-foreground">{formatDuration(race?.human.duration_seconds ?? null)}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Submission</dt>
+                  <dt className="text-muted-foreground">Proof</dt>
                   <dd className="text-foreground">{humanResultPreview}</dd>
                 </div>
               </dl>
@@ -650,11 +655,11 @@ export default function HomePage(): ReactElement {
           </div>
         </section>
 
-        {agentLiveUrl && (
+        {bobLiveUrl && (
           <section className="rounded-2xl border border-border/60 bg-card/80 p-6 shadow-lg">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <span className="flex items-center gap-2 text-sm text-foreground">
-                <MonitorPlay className="h-4 w-4 text-muted-foreground" /> Live session ready
+                <MonitorPlay className="h-4 w-4 text-muted-foreground" /> Bob&apos;s live session ready
               </span>
               <div className="flex items-center gap-2">
                 <Button
@@ -668,8 +673,8 @@ export default function HomePage(): ReactElement {
                   asChild
                   className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
                 >
-                  <a href={agentLiveUrl} target="_blank" rel="noreferrer">
-                    Open in new tab
+                  <a href={bobLiveUrl} target="_blank" rel="noreferrer">
+                    Watch Bob
                   </a>
                 </Button>
               </div>
@@ -678,9 +683,9 @@ export default function HomePage(): ReactElement {
               className={`mt-4 overflow-hidden rounded-2xl border border-border/60 bg-card ${isLiveFullscreen ? "hidden" : ""}`}
             >
               <iframe
-                key={agentLiveUrl}
-                src={agentLiveUrl}
-                title="Browser live session"
+                key={bobLiveUrl}
+                src={bobLiveUrl}
+                title="Bob live session"
                 className="h-[420px] w-full"
                 allow="clipboard-read; clipboard-write; accelerometer; autoplay; camera; microphone"
               />
@@ -693,20 +698,20 @@ export default function HomePage(): ReactElement {
           ref={humanSectionRef}
         >
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-medium text-foreground">Human Submission</h2>
+            <h2 className="text-lg font-medium text-foreground">Your Proof Station</h2>
             <Timer className="h-4 w-4 text-muted-foreground" />
           </div>
 
           {!promptVisible && (
             <p className="mt-3 rounded-xl border border-border/60 bg-muted/40 p-3 text-sm text-muted-foreground">
-              Start the race to reveal the prompt and unlock submissions.
+              Launch the duel to reveal the mission briefing and unlock proof uploads.
             </p>
           )}
 
           <div className="mt-4 space-y-4">
             {promptVisible && (
               <div className="space-y-2">
-                <p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Prompt</p>
+                <p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Mission Briefing</p>
                 <p className="rounded-xl border border-border/60 bg-card p-4 text-base text-foreground whitespace-pre-wrap">
                   {race?.task.human_instructions}
                 </p>
@@ -717,13 +722,13 @@ export default function HomePage(): ReactElement {
                   <form className="space-y-3" onSubmit={handleHumanSubmit}>
                     <div className="space-y-2">
                       <Label htmlFor="human-submission" className="text-xs uppercase tracking-[0.28em] text-muted-foreground">
-                        Your Output
+                        Your Proof
                       </Label>
                       <Textarea
                         id="human-submission"
                         value={humanSubmission}
                         onChange={event => setHumanSubmission(event.target.value)}
-                        placeholder="Describe what you found."
+                        placeholder="Describe how you beat Bob this round."
                         rows={5}
                         disabled={disableHumanForm || isSubmittingHuman}
                         className="border-border/60 bg-card text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/60 focus-visible:ring-offset-background"
@@ -734,7 +739,7 @@ export default function HomePage(): ReactElement {
                       disabled={disableHumanForm || isSubmittingHuman}
                       className="bg-primary text-primary-foreground hover:bg-primary/90"
                     >
-                      {isSubmittingHuman ? "Submitting" : "Submit Result"}
+                      {isSubmittingHuman ? "Transmitting" : "Transmit Proof"}
                     </Button>
                   </form>
                 )
@@ -746,13 +751,13 @@ export default function HomePage(): ReactElement {
                     disabled={disableHumanForm || isSubmittingHuman}
                     className="bg-primary text-primary-foreground hover:bg-primary/90"
                   >
-                    {isSubmittingHuman ? "Submitting" : "Mark Completed"}
+                    {isSubmittingHuman ? "Transmitting" : "Mission Accomplished"}
                   </Button>
                 )}
 
             {humanResultText && (
               <div>
-                <Label className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Recorded Output</Label>
+                <Label className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Recorded Proof</Label>
                 <pre className="mt-2 rounded-xl border border-border/60 bg-muted/50 p-3 text-xs text-foreground whitespace-pre-wrap">
                   {humanResultText}
                 </pre>
@@ -776,16 +781,16 @@ export default function HomePage(): ReactElement {
               verdict && (
                 <div className="mt-4 space-y-3">
                   <p className="text-sm text-muted-foreground">
-                    Winner: <span className="font-semibold uppercase text-foreground">{verdict.winner}</span>
+                    Winner: <span className="font-semibold uppercase text-foreground">{winnerDisplay ?? verdict.winner}</span>
                   </p>
                   <p className="text-sm text-muted-foreground">{verdict.reasoning}</p>
                   <div className="grid gap-3 md:grid-cols-2">
                     <div className="rounded-xl border border-border/60 bg-muted/40 p-4 text-foreground">
-                      <p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Agent Score</p>
+                      <p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Bob Score</p>
                       <p className="mt-2 text-3xl font-semibold text-foreground">{verdict.agent_score.toFixed(1)}</p>
                     </div>
                     <div className="rounded-xl border border-border/60 bg-muted/40 p-4 text-foreground">
-                      <p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Human Score</p>
+                      <p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Your Score</p>
                       <p className="mt-2 text-3xl font-semibold text-foreground">{verdict.human_score.toFixed(1)}</p>
                     </div>
                   </div>
@@ -795,19 +800,19 @@ export default function HomePage(): ReactElement {
           </section>
         )}
 
-        {isLiveFullscreen && agentLiveUrl && (
+        {isLiveFullscreen && bobLiveUrl && (
           <div ref={liveFullscreenRef} className="fixed inset-0 z-50 flex flex-col bg-background/95">
             <div className="flex items-center justify-between border-b border-border/60 bg-card/90 px-4 py-3">
               <span className="flex items-center gap-2 text-sm text-foreground">
-                <MonitorPlay className="h-4 w-4 text-muted-foreground" /> Live session
+                <MonitorPlay className="h-4 w-4 text-muted-foreground" /> Bob live session
               </span>
               <div className="flex items-center gap-2">
                 <Button
                   asChild
                   className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
                 >
-                  <a href={agentLiveUrl} target="_blank" rel="noreferrer">
-                    Open in another tab
+                  <a href={bobLiveUrl} target="_blank" rel="noreferrer">
+                    Watch Bob elsewhere
                   </a>
                 </Button>
                 <Button
@@ -821,9 +826,9 @@ export default function HomePage(): ReactElement {
             </div>
             <div className="flex-1 bg-background">
               <iframe
-                key={`${agentLiveUrl}-fullscreen`}
-                src={agentLiveUrl}
-                title="Browser live session fullscreen"
+                key={`${bobLiveUrl}-fullscreen`}
+                src={bobLiveUrl}
+                title="Bob live session fullscreen"
                 className="h-full w-full border-0"
                 allow="clipboard-read; clipboard-write; accelerometer; autoplay; camera; microphone"
               />
