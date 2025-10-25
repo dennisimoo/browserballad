@@ -21,7 +21,7 @@ ENV NEXT_PUBLIC_AGENT_API=${NEXT_PUBLIC_AGENT_API}
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
-# Uncomment the following line in case you want to disable telemetry during the build.
+# Telemetry is disabled during the build.
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm run build
