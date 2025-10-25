@@ -131,6 +131,7 @@ export default function HomePage(): ReactElement {
   const humanSectionRef = useRef<HTMLDivElement | null>(null);
   const hasScrolledToPromptRef = useRef(false);
   const lastBobLiveUrlRef = useRef<string | null>(null);
+  const hasScrolledForVerdictRef = useRef(false);
 
   const eventSourceRef = useRef<EventSource | null>(null);
 
@@ -534,6 +535,17 @@ export default function HomePage(): ReactElement {
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
     }
   }, [bobLiveUrl]);
+
+  useEffect(() => {
+    if (isJudging || verdict) {
+      if (!hasScrolledForVerdictRef.current) {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+        hasScrolledForVerdictRef.current = true;
+      }
+    } else {
+      hasScrolledForVerdictRef.current = false;
+    }
+  }, [isJudging, verdict]);
 
   return (
     <main className="min-h-screen bg-background text-foreground">

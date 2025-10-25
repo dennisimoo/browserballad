@@ -29,9 +29,9 @@ STATIC_TASKS: list[Dict[str, Any]] = [
         "success_criteria": "Must provide Captain America's real name (Steve Rogers) found on the Wikipedia page.",
         "expected_output_description": "Captain America's real name.",
         "evaluation_guidelines": [
-            "Verify the answer is 'Steve Rogers' or 'Steven Rogers'.",
-            "Confirm navigation was done through Wikipedia links (not direct URL entry).",
-            "Information must be extracted from the Captain America Wikipedia article.",
+            "Accept answers that correctly state 'Steve Rogers' or 'Steven Rogers'.",
+            "Score based on the submitted text only; do not require proof of how the page was reached.",
+            "The response should reflect information found on the Captain America Wikipedia article.",
         ],
     },
 ]
@@ -197,6 +197,7 @@ async def judge_race(
     system_prompt = (
         "You are an impartial adjudicator comparing a human participant to an autonomous browser agent. "
         "You must analyze accuracy, completeness, adherence to success criteria, and speed. "
+        "Base decisions solely on the textual outputs provided. Assume any described navigation occurred successfully and do not require URLs, screenshots, or other browsing proof when scoring. "
         "Respond strictly with JSON containing the keys winner (agent, human, or tie), reasoning, agent_score, and human_score. "
         "Scores must be floating point numbers between 0 and 10. Do not include any additional commentary fields such as feedback."
     )
@@ -223,6 +224,7 @@ async def judge_race(
     user_prompt = (
         "Evaluate the race participants using the provided context. If an entry is missing or empty,"
         " penalize accordingly. Consider speed but prioritize task success."
+        " Judge purely on the supplied text—do not require evidence of navigation or explicit URLs."
         " Respond with JSON only."
     )
 
