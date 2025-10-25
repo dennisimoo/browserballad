@@ -2,12 +2,39 @@ from __future__ import annotations
 
 import json
 import os
+import random
 from typing import Any, Dict
 
 from openai import AsyncOpenAI
 
 _TASK_MODEL = os.getenv("RACE_TASK_MODEL", "gpt-4.1-mini")
 _JUDGE_MODEL = os.getenv("RACE_JUDGE_MODEL", "gpt-5-mini")
+
+# A local pool of race tasks while AI generation is disabled.
+# Feel free to edit or extend this list to suit new challenges.
+STATIC_TASKS: list[Dict[str, Any]] = [
+    {
+        "title": "Wikipedia Spider-Man to Captain America Navigation",
+        "summary": "Navigate from Spider-Man's Wikipedia page to Captain America's Wikipedia page and extract specific information.",
+        "human_instructions": (
+            "Start at the Wikipedia article for Spider-Man (https://en.wikipedia.org/wiki/Spider-Man). "
+            "Navigate to the Captain America Wikipedia article by clicking links within Wikipedia pages. "
+            "Once there, find and provide Captain America's real name."
+        ),
+        "agent_instructions": (
+            "Navigate to https://en.wikipedia.org/wiki/Spider-Man, then follow internal Wikipedia links "
+            "to reach the Captain America article. Extract and return Captain America's real name from the page."
+        ),
+        "task_type": "text_entry",
+        "success_criteria": "Must provide Captain America's real name (Steve Rogers) found on the Wikipedia page.",
+        "expected_output_description": "Captain America's real name.",
+        "evaluation_guidelines": [
+            "Verify the answer is 'Steve Rogers' or 'Steven Rogers'.",
+            "Confirm navigation was done through Wikipedia links (not direct URL entry).",
+            "Information must be extracted from the Captain America Wikipedia article.",
+        ],
+    },
+]
 
 _client: AsyncOpenAI | None = None
 
@@ -94,6 +121,14 @@ def _response_to_text(response: Any) -> str:
 
 
 async def generate_race_task() -> Dict[str, Any]:
+    if STATIC_TASKS:
+        # Return a copy so callers can mutate without affecting the template list.
+        return json.loads(json.dumps(random.choice(STATIC_TASKS)))
+
+    return await _generate_task_via_ai()
+
+
+async def _generate_task_via_ai() -> Dict[str, Any]:
     client = _get_client()
 
     system_prompt = (
