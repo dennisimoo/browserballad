@@ -74,7 +74,7 @@ async def run_agent(task: str, queue: asyncio.Queue) -> None:
     try:
         await queue.put({"type": "log", "message": "Creating Browser Use session..."})
         session = client.sessions.create_session(
-            profile_id="faf3ff86-030f-4b90-a5fc-97e1c08e03d0",
+            profile_id="93ed5ecc-1f4e-4698-a60d-258602976e98",
             proxy_country_code="us",
         )
         await queue.put({"type": "log", "message": f"Session created: {session.id}"})
