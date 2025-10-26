@@ -71,10 +71,18 @@ async def run_agent(task: str, queue: asyncio.Queue) -> None:
 
     await queue.put({"type": "status", "status": "starting", "task": task})
 
-    session = client.sessions.create_session(
-        profile_id="faf3ff86-030f-4b90-a5fc-97e1c08e03d0",
-        proxy_country_code="us",
-    )
+    try:
+        await queue.put({"type": "log", "message": "Creating Browser Use session..."})
+        session = client.sessions.create_session(
+            profile_id="faf3ff86-030f-4b90-a5fc-97e1c08e03d0",
+            proxy_country_code="us",
+        )
+        await queue.put({"type": "log", "message": f"Session created: {session.id}"})
+    except Exception as session_error:
+        error_msg = f"Failed to create Browser Use session: {session_error}"
+        await queue.put({"type": "error", "message": error_msg})
+        logging.error(error_msg)
+        raise
 
     tools = Tools()
     agent_ref: dict[str, Agent | None] = {"agent": None}
