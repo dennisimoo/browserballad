@@ -87,10 +87,14 @@ const sanitizeLiveUrl = (url: string): string =>
 function buildEventHandler(onEvent: (event: StreamEvent) => void) {
   return (event: MessageEvent<string>) => {
     try {
+      if (!event.data || event.data === "undefined" || event.data.trim() === "") {
+        console.warn("Skipping empty or undefined event data");
+        return;
+      }
       const parsed = JSON.parse(event.data) as StreamEvent;
       onEvent(parsed);
     } catch (error) {
-      console.error("Unable to parse event", error);
+      console.error("Unable to parse event", error, "data:", event.data);
     }
   };
 }
