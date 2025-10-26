@@ -103,6 +103,8 @@ async def run_agent(task: str, queue: asyncio.Queue) -> None:
         session=session,
         llm=ChatBrowserUse(),
         use_vision=True,
+        thinking=False,
+        flash_mode=True,
         tools=tools,
     )
     agent_ref["agent"] = agent

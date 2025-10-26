@@ -130,6 +130,8 @@ export default function HomePage(): ReactElement {
   const liveFullscreenRef = useRef<HTMLDivElement | null>(null);
   const humanSectionRef = useRef<HTMLDivElement | null>(null);
   const hasScrolledToPromptRef = useRef(false);
+  const lastBobLiveUrlRef = useRef<string | null>(null);
+  const hasScrolledForVerdictRef = useRef(false);
 
   const eventSourceRef = useRef<EventSource | null>(null);
 
@@ -511,8 +513,39 @@ export default function HomePage(): ReactElement {
       ? "Bob"
       : verdict.winner === "human"
         ? "You"
-        : verdict.winner
+        : verdict.winner === "tie"
+          ? "Tie"
+          : verdict.winner
     : null;
+
+  useEffect(() => {
+    const newUrl = bobLiveUrl ?? null;
+    if (!newUrl) {
+      lastBobLiveUrlRef.current = null;
+      return;
+    }
+    if (lastBobLiveUrlRef.current === newUrl) {
+      return;
+    }
+    lastBobLiveUrlRef.current = newUrl;
+    const section = humanSectionRef.current;
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    }
+  }, [bobLiveUrl]);
+
+  useEffect(() => {
+    if (isJudging || verdict) {
+      if (!hasScrolledForVerdictRef.current) {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+        hasScrolledForVerdictRef.current = true;
+      }
+    } else {
+      hasScrolledForVerdictRef.current = false;
+    }
+  }, [isJudging, verdict]);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -585,7 +618,7 @@ export default function HomePage(): ReactElement {
         </section>
 
         <section className="rounded-2xl border border-border/60 bg-card/80 p-6 shadow-lg">
-          <h2 className="text-lg font-medium text-foreground">Status Board</h2>
+          <h2 className="text-lg font-medium text-foreground">Mission Telemetry</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <div className="rounded-xl border border-border/60 bg-muted/40 p-4 shadow-inner">
               <div className="flex items-center justify-between text-sm">
